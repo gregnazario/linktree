@@ -54,11 +54,11 @@ module profile_address::profile {
         object_address: address
     }
 
-    /// Linktree already exists for user
-    const E_LINKTREE_EXISTS: u64 = 1;
+    /// Profile already exists for user
+    const E_PROFILE_EXISTS: u64 = 1;
 
-    /// Linktree doesn't exist for user
-    const E_LINKTREE_DOESNT_EXIST: u64 = 2;
+    /// Profile doesn't exist for user
+    const E_PROFILE_DOESNT_EXIST: u64 = 2;
 
     /// Length of names and links don't match
     const E_INPUT_MISMATCH: u64 = 3;
@@ -77,13 +77,13 @@ module profile_address::profile {
         links: vector<String>
     ) {
         let caller_address = signer::address_of(caller);
-        assert!(!profile_exists(caller_address), E_LINKTREE_EXISTS);
+        assert!(!profile_exists(caller_address), E_PROFILE_EXISTS);
 
         assert!(
             (avatar_url.is_none()
                 || avatar_nft.is_none())
                 && (avatar_url.is_some()
-                    || avatar_nft.is_some()),
+                || avatar_nft.is_some()),
             E_IMAGE_AND_NFT
         );
 
@@ -126,7 +126,7 @@ module profile_address::profile {
     ) acquires ProfileRef, LinkTree, Controller, Bio {
         let caller_address = signer::address_of(caller);
         let maybe_profile_address = get_profile_address(caller_address);
-        assert!(maybe_profile_address.is_some(), E_LINKTREE_DOESNT_EXIST);
+        assert!(maybe_profile_address.is_some(), E_PROFILE_DOESNT_EXIST);
 
         let profile_address = maybe_profile_address.destroy_some();
         let object_signer =
@@ -163,7 +163,7 @@ module profile_address::profile {
 
         let caller_address = signer::address_of(caller);
         let maybe_profile_address = get_profile_address(caller_address);
-        assert!(maybe_profile_address.is_some(), E_LINKTREE_DOESNT_EXIST);
+        assert!(maybe_profile_address.is_some(), E_PROFILE_DOESNT_EXIST);
 
         let profile_address = maybe_profile_address.destroy_some();
         let annotated_links = convert_links(links);
@@ -177,7 +177,7 @@ module profile_address::profile {
     public entry fun remove_links(caller: &signer, names: vector<String>) acquires ProfileRef, LinkTree {
         let caller_address = signer::address_of(caller);
         let maybe_profile_address = get_profile_address(caller_address);
-        assert!(maybe_profile_address.is_some(), E_LINKTREE_DOESNT_EXIST);
+        assert!(maybe_profile_address.is_some(), E_PROFILE_DOESNT_EXIST);
 
         let profile_address = maybe_profile_address.destroy_some();
         let profile = borrow_global_mut<LinkTree>(profile_address);
@@ -186,11 +186,11 @@ module profile_address::profile {
         });
     }
 
-    /// Delete the Linktree and return the NFTs if any
+    /// Delete the Profile and return the NFTs if any
     public entry fun delete(caller: &signer) acquires ProfileRef, Bio, LinkTree, Controller {
         let caller_address = signer::address_of(caller);
         let maybe_profile_address = get_profile_address(caller_address);
-        assert!(maybe_profile_address.is_some(), E_LINKTREE_DOESNT_EXIST);
+        assert!(maybe_profile_address.is_some(), E_PROFILE_DOESNT_EXIST);
 
         let profile_address = maybe_profile_address.destroy_some();
 
@@ -198,7 +198,7 @@ module profile_address::profile {
         let bio = move_from<Bio>(profile_address);
         destroy_bio(caller_address, bio);
         move_from<LinkTree>(profile_address);
-        let Controller { delete_ref,.. } = move_from<Controller>(profile_address);
+        let Controller { delete_ref, .. } = move_from<Controller>(profile_address);
         object::delete(delete_ref);
 
         // Cleanup refernce to object
@@ -277,7 +277,7 @@ module profile_address::profile {
 
     /// Destroys a bio object
     fun destroy_bio(owner: address, bio: Bio) acquires Controller {
-        match(bio) {
+        match (bio) {
             Bio::Image { name: _, bio: _, avatar_url: _ } => {}
             Bio::NFT { name: _, bio: _, avatar_nft } => {
                 // Transfer the NFT back to the original user
