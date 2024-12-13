@@ -1,5 +1,5 @@
 [package]
-name = "LinkTree"
+name = "Profile"
 version = "1.0.0"
 authors = []
 
@@ -7,7 +7,7 @@ authors = []
 lt_address = "_"
 
 [dev-addresses]
-lt_address = "0x1234567890abcdef"
+profile_address = "0x1234567890abcdef"
 
 [dependencies.AptosFramework]
 git = "https://github.com/aptos-labs/aptos-framework.git"
